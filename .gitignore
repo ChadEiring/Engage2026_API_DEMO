@@ -1,0 +1,14 @@
+# Safety net for the whole repo: never commit secrets or build output.
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+cdk.out/
+build/
+bi_folder/

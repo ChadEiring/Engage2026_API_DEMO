@@ -1,0 +1,26 @@
+Order ID,Customer,Product,Quantity,Order Value,Order Date,Requested Delivery,ERP Status,Carrier,Tracking Number
+SO-10001,Acme Industrial,Sensor Array SA-7,10,6100,2026-10-17,2026-11-05,Picking,,
+SO-10002,Stark Components,Control Valve CV-45,20,8400,2026-10-10,2026-10-19,Picking,,
+SO-10003,Globex Corp,Control Valve CV-45,10,4200,2026-10-06,2026-10-19,Shipped,FedEx Freight,1Z9776552803
+SO-10004,Wonka Foods,Bearing Kit BK-9,40,5400,2026-10-06,2026-10-14,Open,,
+SO-10005,Soylent Co,Sensor Array SA-7,10,6100,2026-10-18,2026-11-08,Open,,
+SO-10006,Globex Corp,Servo Motor SM-12,40,38400,2026-10-08,2026-10-15,Shipped,UPS,1Z8615270538
+SO-10007,Globex Corp,Hydraulic Pump HP-200,5,9250,2026-10-18,2026-10-31,Delivered,DHL,1Z8877444318
+SO-10008,Umbrella Logistics,Control Valve CV-45,10,4200,2026-10-10,2026-10-27,Shipped,DHL,1Z9896606039
+SO-10009,Umbrella Logistics,PLC Module PM-3,5,11250,2026-10-13,2026-10-22,Picking,,
+SO-10010,Vandelay Imports,Bearing Kit BK-9,20,2700,2026-10-09,2026-10-19,Open,,
+SO-10011,Acme Industrial,PLC Module PM-3,10,22500,2026-10-18,2026-10-28,Shipped,FedEx Freight,1Z8752612686
+SO-10012,Umbrella Logistics,Bearing Kit BK-9,10,1350,2026-10-06,2026-10-27,Open,,
+SO-10013,Hooli,Sensor Array SA-7,10,6100,2026-10-08,2026-10-21,Delivered,XPO,1Z5908596099
+SO-10014,Vandelay Imports,Control Valve CV-45,5,2100,2026-10-16,2026-10-31,Picking,,
+SO-10015,Soylent Co,Servo Motor SM-12,40,38400,2026-10-11,2026-10-24,Open,,
+SO-10016,Vandelay Imports,Servo Motor SM-12,5,4800,2026-10-07,2026-10-21,Picking,,
+SO-10017,Globex Corp,Hydraulic Pump HP-200,2,3700,2026-10-18,2026-10-27,Delivered,UPS,1Z5567816720
+SO-10018,Vandelay Imports,Bearing Kit BK-9,40,5400,2026-10-12,2026-10-23,Backordered,,
+SO-10019,Globex Corp,Sensor Array SA-7,2,1220,2026-10-15,2026-11-01,Delivered,DHL,1Z2461042543
+SO-10020,Hooli,Servo Motor SM-12,20,19200,2026-10-07,2026-10-14,Backordered,,
+SO-10021,Initech,PLC Module PM-3,10,22500,2026-10-13,2026-10-28,Shipped,FedEx Freight,1Z3615507143
+SO-10022,Initech,Control Valve CV-45,10,4200,2026-10-17,2026-11-01,Shipped,FedEx Freight,1Z7867414708
+SO-10023,Wayne Enterprises,Bearing Kit BK-9,2,270,2026-10-06,2026-10-27,Delivered,DHL,1Z2028439863
+SO-10024,Globex Corp,Control Valve CV-45,40,16800,2026-10-06,2026-10-24,Delivered,XPO,1Z4504793184
+SO-10025,Hooli,Sensor Array SA-7,5,3050,2026-10-07,2026-10-22,Open,,

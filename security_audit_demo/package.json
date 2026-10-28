@@ -1,0 +1,13 @@
+{
+  "name": "security-audit-demo",
+  "version": "1.0.0",
+  "description": "Demo 3: tenant-wide Smartsheet security audit (external shares and public links) in plain Node.js",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "audit": "node src/audit.js",
+    "audit:dry": "node src/audit.js --dry-run",
+    "test": "node --test"
+  }
+}

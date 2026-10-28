@@ -1,0 +1,3 @@
+aws-cdk-lib==2.226.0  # pinned: must match the installed CDK CLI (schema version)
+constructs>=10
+boto3

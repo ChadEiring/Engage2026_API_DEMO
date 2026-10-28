@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+.DS_Store
+bi_folder/
+
+# AWS build output
+aws/.venv/
+aws/build/
+aws/cdk.out/

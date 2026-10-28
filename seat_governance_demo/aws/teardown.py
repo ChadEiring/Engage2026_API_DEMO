@@ -26,7 +26,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
+sys.path.insert(0, str(HERE))
 
 from stack import PROJECT_TAG, TOKEN_SECRET, WEBHOOK_SECRET  # noqa: E402
 
@@ -34,31 +34,38 @@ TOOLKIT_STACK = "CDKToolkit-seatdemo"
 WEBHOOK_NAME = "Seat governance demo"          # the default name webhook_admin.py gives the webhook
 
 
+# AWS clients live here. This process must never load the Smartsheet helper (seat_common/truststore):
+# truststore and boto3 recurse when they share a process. The Smartsheet step runs separately instead.
+AWS: dict = {}
+
+
+def make_aws_clients() -> None:
+    AWS["sm"] = boto3.client("secretsmanager")
+    AWS["cfn"] = boto3.client("cloudformation")
+    AWS["ecr"] = boto3.client("ecr")
+    AWS["s3"] = boto3.resource("s3")
+    AWS["tagging"] = boto3.client("resourcegroupstaggingapi")
+    AWS["sts"] = boto3.client("sts")
+
+
 def step(n: int, text: str) -> None:
     print(f"\n[{n}] {text}")
 
 
 def remove_webhooks() -> None:
-    """Delete the plan webhook(s) this demo created. Uses plain HTTP: the SDK cannot parse plan webhooks."""
-    import requests
-    try:
-        import seat_common  # noqa: F401  (loads .env and the OS certificate store)
-        headers = {"Authorization": f"Bearer {os.environ['SMARTSHEET_ACCESS_TOKEN']}"}
-    except (SystemExit, KeyError) as exc:
-        print(f"  skipped (Smartsheet token not available: {exc})")
-        return
-    base = "https://api.smartsheet.com/2.0"
-    hooks = requests.get(f"{base}/webhooks?pageSize=100", headers=headers, timeout=30).json().get("data", [])
-    mine = [h for h in hooks if h["name"] == WEBHOOK_NAME]
-    for h in mine:
-        requests.delete(f"{base}/webhooks/{h['id']}", headers=headers, timeout=30)
-        print(f"  deleted webhook {h['id']}")
-    if not mine:
-        print("  no matching webhook found")
+    """Delete the plan webhook(s) this demo created.
+
+    Runs webhook_admin.py as a SEPARATE PROCESS on purpose: it relies on the operating system's
+    certificate store (truststore), and that cannot share a Python process with boto3 (the two
+    recurse until Python gives up).
+    """
+    result = subprocess.run([sys.executable, str(HERE.parent / "webhook_admin.py"), "cleanup"],
+                            capture_output=True, text=True)
+    print("  " + (result.stdout.strip() or result.stderr.strip() or "no output").replace("\n", "\n  "))
 
 
 def remove_secrets() -> None:
-    sm = boto3.client("secretsmanager")
+    sm = AWS["sm"]
     for name in (TOKEN_SECRET, WEBHOOK_SECRET):
         try:
             sm.delete_secret(SecretId=name, ForceDeleteWithoutRecovery=True)
@@ -68,29 +75,36 @@ def remove_secrets() -> None:
 
 
 def remove_bootstrap() -> None:
-    cfn = boto3.client("cloudformation")
+    cfn = AWS["cfn"]
     try:
         resources = cfn.describe_stack_resources(StackName=TOOLKIT_STACK)["StackResources"]
     except ClientError:
         print("  no bootstrap stack found")
         return
+    bucket_to_delete = None
     for r in resources:
         if r["ResourceType"] == "AWS::S3::Bucket":
             print(f"  emptying bucket {r['PhysicalResourceId']}")
-            boto3.resource("s3").Bucket(r["PhysicalResourceId"]).object_versions.delete()
+            bucket = AWS["s3"].Bucket(r["PhysicalResourceId"])
+            bucket.object_versions.delete()
+            bucket_to_delete = r["PhysicalResourceId"]
         if r["ResourceType"] == "AWS::ECR::Repository":
             print(f"  deleting image registry {r['PhysicalResourceId']}")
             try:
-                boto3.client("ecr").delete_repository(repositoryName=r["PhysicalResourceId"], force=True)
+                AWS["ecr"].delete_repository(repositoryName=r["PhysicalResourceId"], force=True)
             except ClientError:
                 pass
     cfn.delete_stack(StackName=TOOLKIT_STACK)
     cfn.get_waiter("stack_delete_complete").wait(StackName=TOOLKIT_STACK)
     print(f"  deleted stack {TOOLKIT_STACK}")
+    # CDK marks its bootstrap bucket "retain", so deleting the stack leaves the (now empty) bucket behind.
+    if bucket_to_delete:
+        AWS["s3"].Bucket(bucket_to_delete).delete()
+        print(f"  deleted bucket {bucket_to_delete}")
 
 
 def leftovers() -> list[str]:
-    tagging = boto3.client("resourcegroupstaggingapi")
+    tagging = AWS["tagging"]
     arns = []
     for page in tagging.get_paginator("get_resources").paginate(TagFilters=[{"Key": "Project", "Values": [PROJECT_TAG]}]):
         arns += [r["ResourceARN"] for r in page["ResourceTagMappingList"]]
@@ -103,7 +117,8 @@ def main() -> int:
     ap.add_argument("--keep-bootstrap", action="store_true", help="leave the CDK bootstrap resources in place")
     args = ap.parse_args()
 
-    ident = boto3.client("sts").get_caller_identity()
+    make_aws_clients()                      # must come before the Smartsheet step below
+    ident = AWS["sts"].get_caller_identity()
     print(f"AWS account {ident['Account']}, region {boto3.session.Session().region_name}")
     if not args.yes and input("Remove the seat-governance demo from AWS? Type 'teardown': ") != "teardown":
         sys.exit("Aborted.")

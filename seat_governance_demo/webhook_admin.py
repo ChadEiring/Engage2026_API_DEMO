@@ -63,6 +63,7 @@ def main() -> int:
     for name in ("enable", "disable", "delete"):
         sub.add_parser(name).add_argument("webhook_id", type=int)
     sub.add_parser("list")
+    sub.add_parser("cleanup", help=f"delete every webhook named {NAME!r} (used by aws/teardown.py)")
     args = ap.parse_args()
 
     settings = sc.load_settings()
@@ -106,6 +107,14 @@ def main() -> int:
     elif args.cmd == "delete":
         call("DELETE", f"/webhooks/{args.webhook_id}")
         print("deleted")
+
+    elif args.cmd == "cleanup":
+        mine = [h for h in call("GET", "/webhooks?pageSize=100").get("data", []) if h["name"] == NAME]
+        for h in mine:
+            call("DELETE", f"/webhooks/{h['id']}")
+            print(f"deleted webhook {h['id']}")
+        if not mine:
+            print("no matching webhook found")
     return 0
 
 

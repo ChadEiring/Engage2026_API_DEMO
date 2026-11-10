@@ -20,6 +20,21 @@ The allowlist in `../.env` still applies.
 > **Gotcha:** these flags are not remembered. Every `cdk deploy` without `-c apply=true` puts the
 > listener back in dry run. Check with the health URL, which says `seat listener up (APPLY)` or `(dry run)`.
 
+## Recreate it all in one command
+
+```bash
+cd aws
+./redeploy.sh --profile <aws-profile> --plan      # prints what it would do, changes nothing
+./redeploy.sh --profile <aws-profile>             # deploys in dry-run mode (safe)
+./redeploy.sh --profile <aws-profile> --apply     # the listener really downgrades unapproved seats
+```
+
+It runs every step below in order and is safe to repeat: it checks your login and `../.env`, builds the Python
+environment, packages the Lambda code, bootstraps the CDK under its own `seatdemo` name, deploys the stack, stores
+the Smartsheet token in Secrets Manager, creates and enables the Smartsheet plan webhook (storing its signing
+secret), and smoke-tests the public URL. Needs only the AWS CLI (signed in), the CDK CLI, Python 3.12+, and a
+`../.env` with a System Admin token, the plan ID and the three sheet IDs. The manual steps follow for reference.
+
 ## Deploy
 
 Needs the AWS CLI signed in, the CDK CLI, and Python 3.12+. `aws-cdk-lib` is pinned in `requirements.txt`

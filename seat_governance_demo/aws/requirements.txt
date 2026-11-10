@@ -1,3 +1,7 @@
 aws-cdk-lib==2.226.0  # pinned: must match the installed CDK CLI (schema version)
 constructs>=10
 boto3
+# needed by webhook_admin.py (creates/enables/deletes the Smartsheet plan webhook)
+smartsheet-python-sdk
+requests
+truststore
